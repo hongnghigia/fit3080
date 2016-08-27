@@ -3,24 +3,27 @@
 def solvepuzzle():
 	puzzle = raw_input("Enter a puzzle: ")
 	split_puzzle = puzzle.split()
-	
+
 	# parsing the input into sections
-	puzzle_string = split_puzzle[1]
+	puzzle_string = list(split_puzzle[1])
 	procedure_name = split_puzzle[2]
 	output_file = split_puzzle[3]
 	flag = split_puzzle[4]
-	visited_state = []
-	
+
+	state = [puzzle_string, white_number(puzzle_string), current_empty_pos(puzzle_string)]
+	stateList = [state]
+
+
 	if procedure_name == "BK":
-		backtrack(puzzle_string,visited_state)
-		
+		backtrack(puzzle_string,stateList)
+
 	"""
 	else procedure_name == "DLS":
 		graph_search(puzzle)
 	"""
-	
-	
-	
+
+
+
 ####################
 # The backtracking algorithm
 #
@@ -29,32 +32,63 @@ def solvepuzzle():
 #			empty - int, the position of the current empty tile in the array
 #			operator - list, the list of possible moves the empty tile can make
 #
-def backtrack(puzzle,visited_state):
+def backtrack(puzzle,stateList):
 
-	# (#W, #B, pos(E))
-	# number of whites, number of blacks, position of E
-	# if number of whites == 3 --> terminate and return the solution
-	"""
-	state = count_first_colour(puzzle)
-	empty_pos = current_empty_pos(puzzle)
-	state["E"] = empty_pos
-	"""
-	move_list = possible_moves(puzzle)
-	state = [count_first_colour(puzzle), current_empty_pos(puzzle)]
-	
+	state = stateList.pop(0)
+	bound = 4
+
 	# if the current state of the puzzle is the solution
-	if found_solution(puzzle):
+	if found_solution(state[0]):
 		return True
-	
+
 	# if visiting an already visited state
-	if state in visited
-	for i in range(len(move_list)):
-		move = move_list.pop()
-		
-	
-	print move_list
+	if state in stateList:
+		return False
+
+	# if bound reached
+	if len(stateList) > bound:
+		return False
+
+	operators = possible_moves(state[0])
+	flag = True
+	while flag:
+		if len(operators) == 0:
+			return False
+
+		op = operators.pop()
+		new_empty_pos = empty_pos + op
+		new_state = move(new_empty_pos, state)
+
+		stateList.insert(0, new_state)
+
+		path = backtrack(puzzle, stateList)
+
+		if path:
+			flag = False
+
+		print path
+		return path
 
 
+################
+# Move the empty tile accordingly
+#
+# @param: 	new_empty_pos - new position of the empty tile
+#			state - current state of the puzzle
+# @return: 	[new_state, white, new_empty_pos]
+def move(new_empty_pos, state):
+	new_state = state[0]
+	old_empty_pos = state[2]
+	new_state[old_empty_pos], new_state[new_empty_pos] = new_state[old_empty_pos], new_state[new_empty_pos]
+
+	white = white_number(new_state)
+	return [new_state, white, new_empty_pos]
+
+################
+# Find all the possbile movements the empty tile can make of the current state of puzzle
+#
+# @param: 	puzzle - list, the current puzzle
+#
 def possible_moves(puzzle):
 	lower_bound = 0
 	upper_bound = 6
@@ -63,24 +97,24 @@ def possible_moves(puzzle):
 	for i in range(1,4):
 		if not (current_empty-i < lower_bound):
 			possible_moves.append(-i)
-		
+
 		if not (current_empty+i > upper_bound):
 			possible_moves.append(i)
-			
-	
+
+
 	return possible_moves
-			
-	
+
+
 
 ###################
 # Check whether the current state of the puzzle is the solution
-# 
+#
 # @param:	puzzle - list, the current puzzle
 # @return: 	True - if current state is the solution
 #			False - if current state is not  the solution
-###################
+#
 def found_solution(puzzle):
-	check = count_first_colour(puzzle)
+	check = white_number(puzzle)
 	if check[0] == 3:
 		return True
 	else:
@@ -91,7 +125,7 @@ def found_solution(puzzle):
 #
 # @param:	puzzle - list, the current puzzle
 # @return: 	i - int, the position in the puzzle
-####################
+#
 def current_empty_pos(puzzle):
 	for i in range(len(puzzle)):
 		if puzzle[i] == "E":
@@ -100,26 +134,19 @@ def current_empty_pos(puzzle):
 
 ###################
 # Counting the number of whites until first black if puzzle starts with white
-# and vice versa
 #
 # @param:	puzzle - list, the current puzzle
 # @return: 	state - dict, dictionary contains number of whites and blacks
-###################
-def count_first_colour(puzzle):
+#
+def white_number(puzzle):
 	state = []
-	
+
 	# if black starts
 	if puzzle[0] == "B":
-		black_count = 1
-		for i in range(1,len(puzzle)):
-			if puzzle[i] == "B":
-				black_count += 1
-			else:
-				state.append(0)
-				state.append(black_count)
-				return state
-				
-	# if white starts			
+		state.append(0)
+		return state
+
+	# if white starts
 	elif puzzle[0] == "W":
 		white_count = 1
 		for i  in range(1,len(puzzle)):
@@ -127,13 +154,12 @@ def count_first_colour(puzzle):
 				white_count += 1
 			else:
 				state.append(white_count)
-				state.append(0)
 				return state
 	else:
 		puzzle.pop(0)
-		count_first_colour(puzzle)
-				
- 	
+		white_number(puzzle)
+
+
 # def graph_search(puzzle):
 
 solvepuzzle()
