@@ -35,7 +35,7 @@ def backtrack(stateList):
 
 	state = list(stateList[0])
 	bound = 10
-	print stateList
+	# print stateList
 
 	# if the current state of the puzzle is the solution
 	if found_solution(state[1]):
