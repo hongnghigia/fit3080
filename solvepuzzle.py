@@ -1,19 +1,22 @@
 #!/usr/bin/python2.7
 import sys
+import writer
 
 def solvepuzzle():
 	split_puzzle = sys.argv
 
 	# parsing the input into sections
 	puzzle_string = split_puzzle[1]
-	print puzzle_string
+
 	procedure_name = split_puzzle[2]
-	print procedure_name
+
 	output_file = split_puzzle[3]
 	flag = split_puzzle[4]
 
 	state = [puzzle_string, white_number(puzzle_string), current_empty_pos(puzzle_string)]
 	stateList = [state]
+
+	global Writer = new Writer(output_file)
 
 	if procedure_name == "BK":
 		backtrack(stateList)
@@ -41,6 +44,7 @@ def backtrack(stateList):
 	# if the current state of the puzzle is the solution
 	if found_solution(state[1]):
 		print "Solution found"
+		print state[0]
 		return True
 
 	# if visiting an already visited state
@@ -71,6 +75,7 @@ def backtrack(stateList):
 
 		if path:
 			print state[0]
+			writer.write(op, state[0], "2")
 			return path
 		else:
 			del stateList[0]
@@ -146,29 +151,22 @@ def current_empty_pos(puzzle):
 # @return: 	state - dict, dictionary contains number of whites on far left
 #
 def white_number(puzzle):
+	# clone the puzzle list
+	tmp = list(puzzle)
+	tmp.remove("E")
 
 	# if black starts
-	if puzzle[0] == "B":
+	if tmp[0] == "B":
 		return 0
 
 	# if white starts
-	elif puzzle[0] == "W":
+	elif tmp[0] == "W":
 		white_count = 0
 		for i  in range(0,len(puzzle)):
-			if puzzle[i] == "W":
+			if tmp[i] == "W":
 				white_count += 1
 			else:
 				return white_count
-	elif puzzle[0] == "E":
-		if puzzle[1] == "B":
-			return 0
-		else:
-			white_count = 0
-			for i  in range(1,len(puzzle)):
-				if puzzle[i] == "W":
-					white_count += 1
-				else:
-					return white_count
 
 
 # def graph_search(puzzle):
