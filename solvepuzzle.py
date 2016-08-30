@@ -1,12 +1,14 @@
-
+#!/usr/bin/python2.7
+import sys
 
 def solvepuzzle():
-	puzzle = raw_input("Enter a puzzle: ")
-	split_puzzle = puzzle.split()
+	split_puzzle = sys.argv
 
 	# parsing the input into sections
-	puzzle_string = list(split_puzzle[1])
+	puzzle_string = split_puzzle[1]
+	print puzzle_string
 	procedure_name = split_puzzle[2]
+	print procedure_name
 	output_file = split_puzzle[3]
 	flag = split_puzzle[4]
 
@@ -35,7 +37,6 @@ def backtrack(stateList):
 
 	state = list(stateList[0])
 	bound = 10
-	# print stateList
 
 	# if the current state of the puzzle is the solution
 	if found_solution(state[1]):
@@ -45,13 +46,12 @@ def backtrack(stateList):
 	# if visiting an already visited state
 	if state in stateList[1:]:
 		# del stateList[0]
-		print "Already existed"
+		# print "Already existed"
 		return False
 
 	# if bound reached
 	if len(stateList) > bound:
-		print "Bound reached"
-
+		# print "Bound reached"
 		return False
 
 	operators = possible_moves(state[2])
@@ -63,7 +63,6 @@ def backtrack(stateList):
 		op = operators.pop()
 		new_empty_pos = state[2] + op
 
-		print new_empty_pos
 		new_state = move(new_empty_pos, state)
 
 		stateList.insert(0, new_state)
