@@ -1,6 +1,5 @@
-
+from treenode import TreeNode
 
 class Tree:
     def __init__(self, state):
-        self.root = state
-        self.stateList = []
+        self.nodes = []

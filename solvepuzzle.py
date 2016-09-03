@@ -25,7 +25,6 @@ def solvepuzzle():
 
 	global writer1
 	writer1 = Writer(output_file)
-	writer1.write("Start", puzzle_string, 0)
 
 	if procedure_name == "BK":
 		backtrack(stateList)
@@ -46,16 +45,30 @@ def solvepuzzle():
 #			operator - list, the list of possible moves the empty tile can make
 #
 def backtrack(stateList):
-
 	state = list(stateList[0])
 	bound = 10
 
 	# if the current state of the puzzle is the solution
 	if found_solution(state[1]):
 		print "Solution found"
-		print stateList
 		for i in reversed(stateList):
-			writer1.write(i[3], i[0], i[4])
+			op = ""
+			if i[3] == 0:
+				op = "START"
+			elif i[3] == 1:
+				op = "1R"
+			elif i[3] == 2:
+				op = "2R"
+			elif i[3] == 3:
+				op = "3R"
+			elif i[3] == -1:
+				op = "1L"
+			elif i[3] == -2:
+				op = "2L"
+			elif i[3] == -3:
+				op = "3L"
+
+			writer1.write(op, i[0], i[4])
 
 		return True
 
