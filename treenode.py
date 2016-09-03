@@ -1,10 +1,9 @@
 class TreeNode:
-	def __init__(self, parent=None, state, identifier):
+	def __init__(self, state, identifier, parent = None):
 		self.children = []
 		self.state = state
 		self._identifier = identifier
 		self.parent = parent
-
 
 	def isRoot(self):
 		return not self.parent
@@ -20,5 +19,8 @@ class TreeNode:
 	def identifier(self):
 		return self._identifier
 	
-	def add_child(self, identifier):
+	def addChild(self, identifier):
 		self.children.append(identifier)
+
+	def getState(self):
+		return self.state

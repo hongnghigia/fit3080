@@ -2,6 +2,8 @@
 
 import sys
 from writer import Writer
+from tree import Tree
+from treenode import TreeNode
 
 
 def solvepuzzle():
@@ -17,7 +19,7 @@ def solvepuzzle():
 
 	# 0 is for the cost of the path at the current state, also the operator
 	# [puzzle, no_white, e_pos, op, cost]
-	state = [puzzle_string, white_number(puzzle_string), current_empty_pos(puzzle_string), 0, 0]
+	state = [puzzle_string, 0, 0]
 	stateList = [state]
 
 	global total_white_no
@@ -29,10 +31,9 @@ def solvepuzzle():
 	if procedure_name == "BK":
 		backtrack(stateList)
 
-	"""
-	else procedure_name == "DLS":
-		graph_search(puzzle)
-	"""
+	elif procedure_name == "DLS":
+		tree_search(state)
+
 
 
 
@@ -49,26 +50,26 @@ def backtrack(stateList):
 	bound = 10
 
 	# if the current state of the puzzle is the solution
-	if found_solution(state[1]):
+	if found_solution(state[0]):
 		print "Solution found"
 		for i in reversed(stateList):
 			op = ""
-			if i[3] == 0:
+			if i[1] == 0:
 				op = "START"
-			elif i[3] == 1:
+			elif i[1] == 1:
 				op = "1R"
-			elif i[3] == 2:
+			elif i[1] == 2:
 				op = "2R"
-			elif i[3] == 3:
+			elif i[1] == 3:
 				op = "3R"
-			elif i[3] == -1:
+			elif i[1] == -1:
 				op = "1L"
-			elif i[3] == -2:
+			elif i[1] == -2:
 				op = "2L"
-			elif i[3] == -3:
+			elif i[1] == -3:
 				op = "3L"
 
-			writer1.write(op, i[0], i[4])
+			writer1.write(op, i[0], i[2])
 
 		return True
 
@@ -80,16 +81,16 @@ def backtrack(stateList):
 	if len(stateList) > bound:
 		return False
 
-	operators = possible_moves(state[2])
+	operators = possible_moves(state[0])
 
 	while len(stateList) != 0:
 		if len(operators) == 0:
 			return False
 
-		total = state[4]
+		total = state[2]
 
 		op = operators.pop()
-		new_empty_pos = state[2] + op
+		new_empty_pos = current_empty_pos(state[0]) + op
 
 		if op == 3 or op == -3:
 			total = total + 2
@@ -97,7 +98,8 @@ def backtrack(stateList):
 			total += 1
 
 
-		new_state = move(new_empty_pos, state, op, total)
+		tmp_state = move(new_empty_pos, state[0])
+		new_state = [tmp_state, op, total]
 
 		stateList.insert(0, new_state)
 
@@ -114,14 +116,14 @@ def backtrack(stateList):
 # @param: 	new_empty_pos - new position of the empty tile
 #			state - current state of the puzzle
 # @return: 	[new_state, white, new_empty_pos]
-def move(new, state, op, cost):
-	new_state = list(state[0])
-	old = state[2]
+def move(new, state):
+	new_state = list(state)
+	old = current_empty_pos(state)
 
 	new_state[old], new_state[new] = new_state[new], new_state[old]
 
 	white = white_number(new_state)
-	return ["".join(new_state), white, new, op, cost]
+	return "".join(new_state)
 
 
 ################
@@ -129,9 +131,10 @@ def move(new, state, op, cost):
 #
 # @param: 	puzzle - list, the current puzzle
 #
-def possible_moves(current_empty):
+def possible_moves(puzzle):
 	lower_bound = 0
 	upper_bound = 6
+	current_empty = current_empty_pos(puzzle)
 	possible_moves = []
 
 	for i in range(1,4):
@@ -153,7 +156,8 @@ def possible_moves(current_empty):
 # @return: 	True - if current state is the solution
 #			False - if current state is not  the solution
 #
-def found_solution(check):
+def found_solution(puzzle):
+	check = white_number(puzzle)
 	if check == total_white_no:
 		return True
 	else:
@@ -204,6 +208,36 @@ def total_white(puzzle):
 
 	return white
 
-# def graph_search(puzzle):
+####-*####*####*####*####*####*####*#####*#####*#####*#####*####*#####
+# Tree Search algorithm
+#
+#@param:	puzzle: the puzzle
+
+def tree_search(puzzle):
+	frontier = []
+	tree = Tree()
+	node = tree.createNode(puzzle[0], "N", None)
+	tree.addNode(node)
+	frontier.append(node)
+
+	while len(frontier) != 0:
+		if len(frontier) == 0:
+			return False
+
+		current_node = frontier.pop(0)
+		state = current_node.getState()
+		if found_solution(state):
+			break
+
+		operators = possible_moves(state)
+		print operators
+		for item in reversed(operators):
+			new_pos = current_empty_pos(state) + item
+			new_state = move(new_pos, state)
+			node = tree.createNode(new_state, "N", current_node)
+			tree.addNode(node)
+			frontier.insert(0, node)
+
+
 
 solvepuzzle()
