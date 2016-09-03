@@ -1,7 +1,8 @@
 #!/usr/bin/python2.7
 
 import sys
-import writer
+from writer import Writer
+
 
 def solvepuzzle():
 	split_puzzle = sys.argv
@@ -14,11 +15,17 @@ def solvepuzzle():
 	output_file = split_puzzle[3]
 	flag = split_puzzle[4]
 
-	# 0 is for the cost of the path at the current state
-	state = [puzzle_string, white_number(puzzle_string), current_empty_pos(puzzle_string), 0]
+	# 0 is for the cost of the path at the current state, also the operator
+	# [puzzle, no_white, e_pos, op, cost]
+	state = [puzzle_string, white_number(puzzle_string), current_empty_pos(puzzle_string), 0, 0]
 	stateList = [state]
 
-	# global Writer = new Writer(output_file)
+	global total_white_no
+	total_white_no = total_white(puzzle_string)
+
+	global writer1
+	writer1 = Writer(output_file)
+	writer1.write("Start", puzzle_string, 0)
 
 	if procedure_name == "BK":
 		backtrack(stateList)
@@ -42,12 +49,14 @@ def backtrack(stateList):
 
 	state = list(stateList[0])
 	bound = 10
-	total = state[3]
 
 	# if the current state of the puzzle is the solution
 	if found_solution(state[1]):
 		print "Solution found"
-		print state
+		print stateList
+		for i in reversed(stateList):
+			writer1.write(i[3], i[0], i[4])
+
 		return True
 
 	# if visiting an already visited state
@@ -64,23 +73,23 @@ def backtrack(stateList):
 		if len(operators) == 0:
 			return False
 
+		total = state[4]
+
 		op = operators.pop()
 		new_empty_pos = state[2] + op
 
-		if op == 3 | op == -3:
+		if op == 3 or op == -3:
 			total = total + 2
 		else:
 			total += 1
 
-		new_state = move(new_empty_pos, state, total)
+
+		new_state = move(new_empty_pos, state, op, total)
 
 		stateList.insert(0, new_state)
 
 		path = backtrack(stateList)
-
 		if path:
-			print state
-			# print op
 			return path
 		else:
 			del stateList[0]
@@ -92,14 +101,14 @@ def backtrack(stateList):
 # @param: 	new_empty_pos - new position of the empty tile
 #			state - current state of the puzzle
 # @return: 	[new_state, white, new_empty_pos]
-def move(new, state, cost):
+def move(new, state, op, cost):
 	new_state = list(state[0])
 	old = state[2]
 
 	new_state[old], new_state[new] = new_state[new], new_state[old]
 
 	white = white_number(new_state)
-	return [new_state, white, new, cost]
+	return ["".join(new_state), white, new, op, cost]
 
 
 ################
@@ -132,7 +141,7 @@ def possible_moves(current_empty):
 #			False - if current state is not  the solution
 #
 def found_solution(check):
-	if check == 3:
+	if check == total_white_no:
 		return True
 	else:
 		return False
@@ -173,6 +182,14 @@ def white_number(puzzle):
 			else:
 				return white_count
 
+
+def total_white(puzzle):
+	white = 0
+	for i in puzzle:
+		if i == "W":
+			white += 1
+
+	return white
 
 # def graph_search(puzzle):
 
