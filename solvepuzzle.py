@@ -1,9 +1,9 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python3.5
 
 import sys
 from writer import Writer
 from tree import Tree
-from treenode import TreeNode
+from treenode import Node
 
 
 def solvepuzzle():
@@ -23,7 +23,7 @@ def solvepuzzle():
 	stateList = [state]
 
 	global flag
-	flag = split_puzzle[4]
+	flag = int(split_puzzle[4])
 
 	global total_white_no
 	total_white_no = total_white(puzzle_string)
@@ -54,7 +54,7 @@ def backtrack(stateList):
 
 	# if the current state of the puzzle is the solution
 	if found_solution(state[0]):
-		print "Solution found"
+		print("Solution found")
 		if flag >= 1:
 			writer1.diagWrite(state[1], state[0], state[2], "SOLUTION FOUND")
 		elif flag == 0:	
@@ -216,55 +216,69 @@ def total_white(puzzle):
 
 def tree_search(puzzle):
 	frontier = []
-	closed = []
+	explored = []
 	tree = Tree()
-	node = tree.createNode(puzzle[0],0, [], None)
-	tree.addNode(node)
+	node = tree.makeNode(puzzle[0], 0, 0, [], None)
 
 	frontier.append(node)
-	limit = 9
+
+	depth = 10
 	while True:
-		if frontier == 0:
+		if len(frontier) == 0:
+			print("WIEOF")
 			return False
-		# print frontier
-		current_node = frontier.pop(0)
 
-		if found_solution(current_node.getState()):
-			print "found"
-			writer1.diagWrite(current_node.getOp(), current_node.getState(), 0, "SOLUTION FOUND")
-			print current_node.getPath()
-			print current_node
+		currentNode = frontier.pop(0)
+
+		if found_solution(currentNode.getState()):
+			print(currentNode.getPath())
+			print(currentNode.cost)
+			if flag == 0:
+				writer1.write(currentNode.op,currentNode.string, currentNode.cost)
+				while currentNode.parent != None:
+					writer1.write(currentNode.parent.op,currentNode.parent.string, currentNode.parent.cost)
+					currentNode = currentNode.parent
+
+				print("Hello")
 			return True
 
-		if len(current_node.getPath()) < limit:
-			operators = possible_moves(current_node.getState())
-			for item in operators:
-				new_pos = current_empty_pos(current_node.getState())+item
-				new_state = move(new_pos, current_node.getState())
 
-				if not ancestorCheck(current_node, new_state):	
-					node = tree.createNode(new_state, item, current_node.getPath(), current_node)
-					frontier.insert(0,node)
+		explored.append(currentNode)
+
+		# print(currentNode.getPath())
+
+
+		if len(currentNode.getPath()) < depth:
+			operators = possible_moves(currentNode.getState())
+			
+
+			for i in operators:
+				new_pos = current_empty_pos(currentNode.getState()) + i
+				new_state = move(new_pos, currentNode.getState())
+
+
+				new_node = tree.makeNode(new_state, i, currentNode.cost, currentNode.getPath(), currentNode)
+
+				if hasSameAncestor(new_node):
+					if flag >= 1:
+						writer1.write(currentNode.getOp(),currentNode.getState(), currentNode.getCost(), "ANCESTOR")
+
 				else:
-					writer1.diagWrite(current_node.getOp(), current_node.getState(), 0, "ANCESTOR")
-
-			closed.append(current_node)
-
+					frontier.insert(0, new_node)
 		else:
-			writer1.diagWrite(current_node.getOp(), current_node.getState(), 0, "DEPTH LIMIT")
-			closed.append(current_node)
+			if flag >= 1:
+				writer1.diagWrite(currentNode.getOp(),currentNode.getState(), currentNode.getCost(), "BOUND REACHED")
 
-		
-		
 
-def ancestorCheck(current, state):
-	if current.parent == None:
-		return False
-	else:
-		parent = current.parent
-		if parent.getState() == state:
+def hasSameAncestor(node):
+	string = node.getString()
+
+	while node.parent != None:
+		if node.parent.string == string:
 			return True
-		else:
-			ancestorCheck(parent, state)
+		node = node.parent
+
+	return False
+
 
 solvepuzzle()

@@ -1,48 +1,37 @@
-class TreeNode:
-	def __init__(self, state, op, identifier, path, parent = None):
-		self.children = []
+class Node:
+	def __init__(self, string, op, identifier, cost, path, parent):
+		self.string = string
 		self.op = op
-		self.state = state
-		self._identifier = identifier
+		self.g = 0
+		self.h = 0
+		self.identifier = identifier
+		self.cost = cost
 		self.parent = parent
-		self.path = path + [self._identifier]
-
-	def isRoot(self):
-		return not self.parent
-
-	def hasChildren(self):
-		if len(self.children) == 0:
-			return False
-		else:
-			return True
-
+		self.path = path + [self.identifier]
 
 	def __repr__(self):
-		return self.state
+		return self.identifier
 
-	@property
-	def identifier(self):
-		return self._identifier
-
-	def getParent(self):
-		return self.parent
-		
-	
-	def addChild(self, identifier):
-		self.children.append(identifier)
 
 	def getState(self):
-		return self.state
+		return self.string
 
-	def getChildren(self):
-		return self.children
 
 	def getOp(self):
 		return self.op
 
+
+	def getCost(self):
+		return self.cost
+
+
 	def getPath(self):
 		return self.path
 
-	def addPath(self, node):
-		self.path.append(node)
 
+	def getString(self):
+		return self.string
+
+
+	def getParent(self):
+		return self.parent
