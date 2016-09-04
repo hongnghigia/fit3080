@@ -11,7 +11,7 @@ class Node:
 		self.path = path + [self.identifier]
 
 	def __repr__(self):
-		return self.identifier
+		return self.string
 
 
 	def getState(self):
