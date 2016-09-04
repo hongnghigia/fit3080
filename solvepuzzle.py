@@ -84,7 +84,8 @@ def backtrack(stateList):
 
 	while True:
 		if len(operators) == 0:
-			writer1.diagWrite(state[1], state[0], state[2],"NO MORE OPS")
+			if flag >= 1:
+				writer1.diagWrite(state[1], state[0], state[2],"NO MORE OPS")
 			return False
 
 		total = state[2]
@@ -222,7 +223,7 @@ def tree_search(puzzle):
 
 	frontier.append(node)
 
-	depth = 10
+	depth = 9
 	while True:
 		if len(frontier) == 0:
 			print("WIEOF")
