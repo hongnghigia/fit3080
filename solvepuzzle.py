@@ -1,9 +1,9 @@
 #!/usr/bin/python3.5
-
 import sys
 from writer import Writer
 from tree import Tree
 from treenode import Node
+from backtrack1 import Backtrack
 
 
 def solvepuzzle():
@@ -14,7 +14,9 @@ def solvepuzzle():
 
 	procedure_name = split_puzzle[2]
 
-	output_file = split_puzzle[3]
+	o_file = split_puzzle[3]
+
+	output_file = open(o_file+".txt", "a")
 
 
 	# 0 is for the cost of the path at the current state, also the operator
@@ -29,10 +31,30 @@ def solvepuzzle():
 	total_white_no = total_white(puzzle_string)
 
 	global writer1
-	writer1 = Writer(output_file)
+	writer1 = Writer(o_file)
 
 	if procedure_name == "BK":
-		backtrack(stateList)
+
+	    print("backtrack")
+	    start_op = ["start"]
+	    solve_puzzle = Backtrack(puzzle_string, output_file, flag, start_op)
+	    solve_puzzle.backtrack(solve_puzzle.past_positions, solve_puzzle.start_op)
+	    cost = 0
+	    for i in range(len(solve_puzzle.final_path)):
+			string1 = ''.join(solve_puzzle.final_path[i])
+			# print(solve_puzzle.final_ops[i], '\t', string1,'\t', cost, file=output_file)
+			output_file.write(str(solve_puzzle.final_ops[i])+ '\t'+ str(string1)+'\t'+ str(cost))
+
+			print(solve_puzzle.final_ops[i], string1, cost)
+			try:
+				calc_cost = abs(solve_puzzle.final_path[i].index('E') - solve_puzzle.final_path[i+1].index('E'))
+				if calc_cost > 1:
+				    cost += calc_cost - 1
+				else:
+				    cost += calc_cost
+			except IndexError:
+				pass
+			print(solve_puzzle.final_ops)
 
 	elif procedure_name == "DLS":
 		tree_search(state)
@@ -226,7 +248,7 @@ def tree_search(puzzle):
 
 	frontier.append(node)
 
-	depth = 11
+	depth = 10
 	while True:
 		if len(frontier) == 0:
 			print("No solution")
@@ -234,8 +256,12 @@ def tree_search(puzzle):
 
 		currentNode = frontier.pop(0)
 
+		if flag >= 1:
+			writer1.writeNode(node,frontier,explored, "EXPANDED")
+
 		# if found solution
 		if found_solution(currentNode.getState()):
+			print("Solution found")
 			print(currentNode.getPath())
 			print(currentNode.cost)
 			if flag == 0:
@@ -244,8 +270,9 @@ def tree_search(puzzle):
 					writer1.write(currentNode.parent.op,currentNode.parent.string, currentNode.parent.cost)
 					currentNode = currentNode.parent
 
-				print("Hello")
 			return True
+
+
 
 
 		explored.append(currentNode)
@@ -261,18 +288,13 @@ def tree_search(puzzle):
 
 
 				new_node = tree.makeNode(new_state, i, currentNode.cost, currentNode.getPath(), currentNode)
+				new_node.heuristic()
+
+				writer1.writeNewNode(new_node)
 
 				# if state has already been explored
-				if hasSameAncestor(new_node):
-					if flag >= 1:
-						writer1.write(currentNode.getOp(),currentNode.getState(), currentNode.getCost(), "ANCESTOR")
-
-				else:
+				if not hasSameAncestor(new_node):
 					frontier.insert(0, new_node)
-		else:
-			# when the path reaches the depth limit
-			if flag >= 1:
-				writer1.diagWrite(currentNode.getOp(),currentNode.getState(), currentNode.getCost(), "BOUND REACHED")
 
 """
 	A/A* algorithm, it's the same as tree_search except the frontier list is ordered in a different way using some heuristic function
