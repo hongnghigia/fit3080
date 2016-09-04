@@ -15,12 +15,15 @@ def solvepuzzle():
 	procedure_name = split_puzzle[2]
 
 	output_file = split_puzzle[3]
-	flag = split_puzzle[4]
+	
 
 	# 0 is for the cost of the path at the current state, also the operator
-	# [puzzle, no_white, e_pos, op, cost]
+	# [puzzle, op, cost]
 	state = [puzzle_string, 0, 0]
 	stateList = [state]
+
+	global flag
+	flag = split_puzzle[4]
 
 	global total_white_no
 	total_white_no = total_white(puzzle_string)
@@ -52,39 +55,36 @@ def backtrack(stateList):
 	# if the current state of the puzzle is the solution
 	if found_solution(state[0]):
 		print "Solution found"
-		for i in reversed(stateList):
-			op = ""
-			if i[1] == 0:
-				op = "START"
-			elif i[1] == 1:
-				op = "1R"
-			elif i[1] == 2:
-				op = "2R"
-			elif i[1] == 3:
-				op = "3R"
-			elif i[1] == -1:
-				op = "1L"
-			elif i[1] == -2:
-				op = "2L"
-			elif i[1] == -3:
-				op = "3L"
-
-			writer1.write(op, i[0], i[2])
+		if flag >= 1:
+			writer1.diagWrite(state[1], state[0], state[2], "SOLUTION FOUND")
+		elif flag == 0:	
+			for i in reversed(stateList):
+				writer1.write(i[1], i[0], i[2])
 
 		return True
 
-	# if visiting an already visited state
-	if state in stateList[1:]:
-		return False
+	# ancestor
+	for i in range(1, len(stateList)):
+		if stateList[i][0] == state[0]:
+			if flag == 0:
+				pass
+			else:
+				writer1.diagWrite(state[1], state[0], state[2],"ANCESTOR")
+			return False
 
 	# if bound reached
-	if len(stateList) > bound:
+	if len(stateList) >= bound:
+		if flag == 0:
+			pass
+		else:
+			writer1.diagWrite(state[1], state[0], state[2],"BOUND REACHED")
 		return False
 
 	operators = possible_moves(state[0])
 
-	while len(stateList) != 0:
+	while True:
 		if len(operators) == 0:
+			writer1.diagWrite(state[1], state[0], state[2],"NO MORE OPS")
 			return False
 
 		total = state[2]
@@ -108,6 +108,7 @@ def backtrack(stateList):
 			return path
 		else:
 			del stateList[0]
+	
 
 
 ################
@@ -215,29 +216,55 @@ def total_white(puzzle):
 
 def tree_search(puzzle):
 	frontier = []
+	closed = []
 	tree = Tree()
-	node = tree.createNode(puzzle[0], "N", None)
+	node = tree.createNode(puzzle[0],0, [], None)
 	tree.addNode(node)
+
 	frontier.append(node)
-
-	while len(frontier) != 0:
-		if len(frontier) == 0:
+	limit = 9
+	while True:
+		if frontier == 0:
 			return False
-
+		# print frontier
 		current_node = frontier.pop(0)
-		state = current_node.getState()
-		if found_solution(state):
-			break
 
-		operators = possible_moves(state)
-		print operators
-		for item in reversed(operators):
-			new_pos = current_empty_pos(state) + item
-			new_state = move(new_pos, state)
-			node = tree.createNode(new_state, "N", current_node)
-			tree.addNode(node)
-			frontier.insert(0, node)
+		if found_solution(current_node.getState()):
+			print "found"
+			writer1.diagWrite(current_node.getOp(), current_node.getState(), 0, "SOLUTION FOUND")
+			print current_node.getPath()
+			print current_node
+			return True
 
+		if len(current_node.getPath()) < limit:
+			operators = possible_moves(current_node.getState())
+			for item in operators:
+				new_pos = current_empty_pos(current_node.getState())+item
+				new_state = move(new_pos, current_node.getState())
 
+				if not ancestorCheck(current_node, new_state):	
+					node = tree.createNode(new_state, item, current_node.getPath(), current_node)
+					frontier.insert(0,node)
+				else:
+					writer1.diagWrite(current_node.getOp(), current_node.getState(), 0, "ANCESTOR")
+
+			closed.append(current_node)
+
+		else:
+			writer1.diagWrite(current_node.getOp(), current_node.getState(), 0, "DEPTH LIMIT")
+			closed.append(current_node)
+
+		
+		
+
+def ancestorCheck(current, state):
+	if current.parent == None:
+		return False
+	else:
+		parent = current.parent
+		if parent.getState() == state:
+			return True
+		else:
+			ancestorCheck(parent, state)
 
 solvepuzzle()
