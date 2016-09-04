@@ -2,7 +2,8 @@ class Node:
 	def __init__(self, string, op, identifier, cost, path, parent):
 		self.string = string
 		self.op = op
-		self.g = 0
+		self.g = cost
+		self.f = 0
 		self.h = 0
 		self.identifier = identifier
 		self.cost = cost
@@ -35,3 +36,15 @@ class Node:
 
 	def getParent(self):
 		return self.parent
+
+
+	def heuristic(self):
+		count = 0
+		for i in range(0,3):
+			if self.string[i] == "B":
+				count += 2
+
+		self.h = count
+
+		self.f = self.h + self.g
+		return self.f

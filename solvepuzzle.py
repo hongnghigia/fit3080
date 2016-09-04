@@ -15,7 +15,7 @@ def solvepuzzle():
 	procedure_name = split_puzzle[2]
 
 	output_file = split_puzzle[3]
-	
+
 
 	# 0 is for the cost of the path at the current state, also the operator
 	# [puzzle, op, cost]
@@ -37,6 +37,9 @@ def solvepuzzle():
 	elif procedure_name == "DLS":
 		tree_search(state)
 
+	elif procedure_name == "A":
+		a(state)
+
 
 
 
@@ -57,7 +60,7 @@ def backtrack(stateList):
 		print("Solution found")
 		if flag >= 1:
 			writer1.diagWrite(state[1], state[0], state[2], "SOLUTION FOUND")
-		elif flag == 0:	
+		elif flag == 0:
 			for i in reversed(stateList):
 				writer1.write(i[1], i[0], i[2])
 
@@ -109,7 +112,7 @@ def backtrack(stateList):
 			return path
 		else:
 			del stateList[0]
-	
+
 
 
 ################
@@ -231,6 +234,7 @@ def tree_search(puzzle):
 
 		currentNode = frontier.pop(0)
 
+		# if found solution
 		if found_solution(currentNode.getState()):
 			print(currentNode.getPath())
 			print(currentNode.cost)
@@ -246,12 +250,10 @@ def tree_search(puzzle):
 
 		explored.append(currentNode)
 
-		# print(currentNode.getPath())
-
 
 		if len(currentNode.getPath()) < depth:
 			operators = possible_moves(currentNode.getState())
-			
+
 
 			for i in operators:
 				new_pos = current_empty_pos(currentNode.getState()) + i
@@ -260,6 +262,7 @@ def tree_search(puzzle):
 
 				new_node = tree.makeNode(new_state, i, currentNode.cost, currentNode.getPath(), currentNode)
 
+				# if state has already been explored
 				if hasSameAncestor(new_node):
 					if flag >= 1:
 						writer1.write(currentNode.getOp(),currentNode.getState(), currentNode.getCost(), "ANCESTOR")
@@ -267,8 +270,75 @@ def tree_search(puzzle):
 				else:
 					frontier.insert(0, new_node)
 		else:
+			# when the path reaches the depth limit
 			if flag >= 1:
 				writer1.diagWrite(currentNode.getOp(),currentNode.getState(), currentNode.getCost(), "BOUND REACHED")
+
+"""
+	A/A* algorithm, it's the same as tree_search except the frontier list is ordered in a different way using some heuristic function
+	@param: 	puzzle - the initial state
+"""
+def a(puzzle):
+	frontier = []
+	explored = []
+	tree = Tree()
+	node = tree.makeNode(puzzle[0], 0, 0, [], None)
+
+	frontier.append(node)
+
+	depth = 9
+	while True:
+		if len(frontier) == 0:
+			print("No solution")
+			return False
+
+		frontier = heuristicFuction(frontier)
+		currentNode = frontier.pop(0)
+
+		# if found solution
+		if found_solution(currentNode.getState()):
+			print(currentNode.getPath())
+			print(currentNode.cost)
+			if flag == 0:
+				writer1.write(currentNode.op,currentNode.string, currentNode.cost)
+				while currentNode.parent != None:
+					writer1.write(currentNode.parent.op,currentNode.parent.string, currentNode.parent.cost)
+					currentNode = currentNode.parent
+
+				print("Hello")
+			return True
+
+
+		explored.append(currentNode)
+
+
+		if len(currentNode.getPath()) < depth:
+			operators = possible_moves(currentNode.getState())
+
+
+			for i in operators:
+				new_pos = current_empty_pos(currentNode.getState()) + i
+				new_state = move(new_pos, currentNode.getState())
+
+
+				new_node = tree.makeNode(new_state, i, currentNode.cost, currentNode.getPath(), currentNode)
+				new_node.heuristic()
+
+				# if state has already been explored
+				if hasSameAncestor(new_node):
+					if flag >= 1:
+						writer1.write(currentNode.getOp(),currentNode.getState(), currentNode.getCost(), "ANCESTOR")
+
+				else:
+					frontier.insert(0, new_node)
+		else:
+			# when the path reaches the depth limit
+			if flag >= 1:
+				writer1.diagWrite(currentNode.getOp(),currentNode.getState(), currentNode.getCost(), "BOUND REACHED")
+
+def heuristicFuction(frontier):
+	frontier.sort(key=lambda x:x.f, reverse=False)
+	return frontier
 
 
 def hasSameAncestor(node):
